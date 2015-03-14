@@ -25,7 +25,10 @@ then
 	do
 		folderToMove=$(( ${i} - 1))
 		folderDestination=${i}
-		mv ${dailiesDirectoryPath}/${folderToMove} ${dailiesDirectoryPath}/${folderDestination}
+		if [ -e ${dailiesDirectoryPath}/${folderToMove} ]
+		then
+			mv ${dailiesDirectoryPath}/${folderToMove} ${dailiesDirectoryPath}/${folderDestination}
+		fi
 	done
 fi
 
