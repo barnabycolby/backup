@@ -4,7 +4,18 @@
 source /home/backup/backup/config
 
 # The first thing to do is to discard the last backup
-rm -rf ${dailiesDirectoryPath}/${numberOfDailyBackups}
+# We also remove any other backups that might exist as a result of the number of backups to create being lowered
+backupFolderToRemove=${numberOfDailyBackups}
+# Make sure that we don't try and remove folder 0, but also that we always remove any extra folders
+if [ ${numberOfDailyBackups} -lt 1 ]
+then
+	backupFolderToRemove=1
+fi
+while [ -e ${dailiesDirectoryPath}/${backupFolderToRemove} ]
+do
+	rm -rf ${dailiesDirectoryPath}/${backupFolderToRemove}
+	backupFolderToRemove=$(( ${backupFolderToRemove} + 1 ))
+done
 
 # Now we can rotate the other daily snapshots
 # We only need to perform the rotation if we're making more than one snapshot
