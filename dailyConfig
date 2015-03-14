@@ -4,3 +4,9 @@ numberOfSnapshots=7
 
 # The paths of the folders used by the scripts 
 snapshotDirectoryPath="${backupDirectoryPath}/dailies"
+
+# The path of the file pipe used for logging output
+filePipePath="/home/backup/backup/dailyBackupFilePipe"
+
+# The path of the log file
+logFile="/home/backup/backup/dailyLog"

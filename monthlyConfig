@@ -4,3 +4,9 @@ numberOfSnapshots=3
 
 # The paths of the folders used by the scripts 
 snapshotDirectoryPath="${backupDirectoryPath}/monthlies"
+
+# The path of the file pipe used for logging output
+filePipePath="/home/backup/backup/monthlyBackupFilePipe"
+
+# The path of the log file
+logFile="/home/backup/backup/monthlyLog"
