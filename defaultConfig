@@ -1,5 +1,5 @@
 # Configuration file for the backup scripts. It specifies the default settings for all scripts.
 
 # The paths of the folders used by the scripts 
-backupDirectory='/mnt/testRAID'
-continuousDirectoryPath="${backupDirectory}/continuous"
+backupDirectoryPath='/mnt/testRAID'
+continuousDirectoryPath="${backupDirectoryPath}/continuous"

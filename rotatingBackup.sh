@@ -13,40 +13,40 @@ source ~/backup/defaultConfig
 # Read in the variables from the config file that was passed in as an argument
 source $1
 
-# The first thing to do is to discard the last backup
-# We also remove any other backups that might exist as a result of the number of backups to create being lowered
-backupFolderToRemove=${numberOfDailyBackups}
-# Make sure that we don't try and remove folder 0, but also that we always remove any extra folders
-if [ ${numberOfDailyBackups} -lt 1 ]
+# The first thing to do is to discard the last snapshot
+# We also remove any other snapshots that might exist as a result of the number of snapshots to create being lowered
+snapshotFolderToRemove=${numberOfSnapshots}
+# Make sure that we don't try and remove snapshot 0, but also that we always remove any extra snapshots
+if [ ${numberOfSnapshots} -lt 1 ]
 then
-	backupFolderToRemove=1
+	snapshotFolderToRemove=1
 fi
-while [ -e ${dailiesDirectoryPath}/${backupFolderToRemove} ]
+while [ -e ${snapshotDirectoryPath}/${snapshotFolderToRemove} ]
 do
-	rm -rf ${dailiesDirectoryPath}/${backupFolderToRemove}
-	backupFolderToRemove=$(( ${backupFolderToRemove} + 1 ))
+	rm -rf ${snapshotDirectoryPath}/${snapshotFolderToRemove}
+	snapshotFolderToRemove=$(( ${snapshotFolderToRemove} + 1 ))
 done
 
-# Now we can rotate the other daily snapshots
+# Now we can rotate the other snapshots
 # We only need to perform the rotation if we're making more than one snapshot
-if [ ${numberOfDailyBackups} -gt 1 ]
+if [ ${numberOfSnapshots} -gt 1 ]
 then
-	for i in `seq ${numberOfDailyBackups} -1 2`
+	for i in `seq ${numberOfSnapshots} -1 2`
 	do
 		folderToMove=$(( ${i} - 1))
 		folderDestination=${i}
-		if [ -e ${dailiesDirectoryPath}/${folderToMove} ]
+		if [ -e ${snapshotDirectoryPath}/${folderToMove} ]
 		then
-			mv ${dailiesDirectoryPath}/${folderToMove} ${dailiesDirectoryPath}/${folderDestination}
+			mv ${snapshotDirectoryPath}/${folderToMove} ${snapshotDirectoryPath}/${folderDestination}
 		fi
 	done
 fi
 
-# Finally, if the number of daily backups is more than 0 then we need to create a new daily snapshot
-if [ ${numberOfDailyBackups} -gt 0 ]
+# Finally, if the number of snaphshots is more than 0 then we need to create a new snapshot
+if [ ${numberOfSnapshots} -gt 0 ]
 then
 	# a flag preserves timestamps, owners etc. (Archive)
 	# l flag copies files using hard links so that they use the same underlying file data
 	# remove-destination removes the hard link between files if it's changed to prevent the overwrite changed the data in the previous backups
-	cp -al --remove-destination ${continuousDirectoryPath} ${dailiesDirectoryPath}/1
+	cp -al --remove-destination ${continuousDirectoryPath} ${snapshotDirectoryPath}/1
 fi
