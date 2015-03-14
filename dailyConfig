@@ -1,8 +1,6 @@
-# Configuration file for the backup scripts
+# Configuration file for the daily backup script
 
 numberOfDailyBackups=7
 
 # The paths of the folders used by the scripts 
-backupDirectory='/mnt/testRAID'
-continuousDirectoryPath="${backupDirectory}/continuous"
 dailiesDirectoryPath="${backupDirectory}/dailies"

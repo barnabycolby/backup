@@ -7,7 +7,10 @@ then
 	exit 1
 fi
 
-# Read in the variables from the config file
+# Read in the variables from the default config file for all backups
+source ~/backup/defaultConfig
+
+# Read in the variables from the config file that was passed in as an argument
 source $1
 
 # The first thing to do is to discard the last backup
