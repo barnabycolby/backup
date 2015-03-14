@@ -18,8 +18,11 @@ then
 	done
 fi
 
-# Finally, we need to create the new daily snapshot
-# a flag preserves timestamps, owners etc. (Archive)
-# l flag copies files using hard links so that they use the same underlying file data
-# remove-destination removes the hard link between files if it's changed to prevent the overwrite changed the data in the previous backups
-cp -al --remove-destination ${continuousDirectoryPath} ${dailiesDirectoryPath}/1
+# Finally, if the number of daily backups is more than 0 then we need to create a new daily snapshot
+if [ ${numberOfDailyBackups} -gt 0 ]
+then
+	# a flag preserves timestamps, owners etc. (Archive)
+	# l flag copies files using hard links so that they use the same underlying file data
+	# remove-destination removes the hard link between files if it's changed to prevent the overwrite changed the data in the previous backups
+	cp -al --remove-destination ${continuousDirectoryPath} ${dailiesDirectoryPath}/1
+fi
