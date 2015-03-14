@@ -43,6 +43,7 @@ then
 fi
 while [ -e ${snapshotDirectoryPath}/${snapshotToRemove} ]
 do
+	echo "Removing snapshot ${snapshotToRemove}."
 	rm -rf ${snapshotDirectoryPath}/${snapshotToRemove}
 	snapshotToRemove=$(( ${snapshotToRemove} + 1 ))
 done
@@ -57,6 +58,7 @@ then
 		folderDestination=${i}
 		if [ -e ${snapshotDirectoryPath}/${folderToMove} ]
 		then
+			echo "Rotating snapshot: ${folderToMove} -> ${folderDestination}"
 			mv ${snapshotDirectoryPath}/${folderToMove} ${snapshotDirectoryPath}/${folderDestination}
 		fi
 	done
@@ -68,6 +70,7 @@ then
 	# a flag preserves timestamps, owners etc. (Archive)
 	# l flag copies files using hard links so that they use the same underlying file data
 	# remove-destination removes the hard link between files if it's changed to prevent the overwrite changed the data in the previous backups
+	echo "Creating new snapshot."
 	cp -al --remove-destination ${continuousDirectoryPath} ${snapshotDirectoryPath}/1
 fi
 
