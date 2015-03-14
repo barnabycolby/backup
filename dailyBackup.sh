@@ -4,12 +4,19 @@
 source /home/backup/backup/config
 
 # The first thing to do is to discard the last backup
-rm -rf ${dailiesDirectoryPath}/4
+rm -rf ${dailiesDirectoryPath}/${numberOfDailyBackups}
 
 # Now we can rotate the other daily snapshots
-mv ${dailiesDirectoryPath}/3 ${dailiesDirectoryPath}/4
-mv ${dailiesDirectoryPath}/2 ${dailiesDirectoryPath}/3
-mv ${dailiesDirectoryPath}/1 ${dailiesDirectoryPath}/2
+# We only need to perform the rotation if we're making more than one snapshot
+if [ ${numberOfDailyBackups} -gt 1 ]
+then
+	for i in `seq ${numberOfDailyBackups} -1 2`
+	do
+		folderToMove=$(( ${i} - 1))
+		folderDestination=${i}
+		mv ${dailiesDirectoryPath}/${folderToMove} ${dailiesDirectoryPath}/${folderDestination}
+	done
+fi
 
 # Finally, we need to create the new daily snapshot
 # a flag preserves timestamps, owners etc. (Archive)
