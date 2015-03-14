@@ -9,4 +9,4 @@ snapshotDirectoryPath="${backupDirectoryPath}/dailies"
 filePipePath="/home/backup/backup/dailyBackupFilePipe"
 
 # The path of the log file
-logFile="/home/backup/backup/dailyLog"
+logFile="/home/backup/backup/logs/dailyLog"

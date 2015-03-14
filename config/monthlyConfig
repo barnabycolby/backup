@@ -9,4 +9,4 @@ snapshotDirectoryPath="${backupDirectoryPath}/monthlies"
 filePipePath="/home/backup/backup/monthlyBackupFilePipe"
 
 # The path of the log file
-logFile="/home/backup/backup/monthlyLog"
+logFile="/home/backup/backup/logs/monthlyLog"

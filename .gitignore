@@ -2,4 +2,4 @@
 test.sh
 
 # Ignore any log files
-*Log
+logs/

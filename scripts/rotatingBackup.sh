@@ -11,7 +11,7 @@ then
 fi
 
 # Read in the variables from the default config file for all backups
-source ~/backup/defaultConfig
+source ~/backup/config/defaultConfig
 
 # Read in the variables from the config file that was passed in as an argument
 source $1
