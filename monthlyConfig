@@ -1,0 +1,6 @@
+# Configuration file for the monthly backup script
+
+numberOfSnapshots=3
+
+# The paths of the folders used by the scripts 
+snapshotDirectoryPath="${backupDirectoryPath}/monthlies"
