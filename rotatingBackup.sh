@@ -35,16 +35,16 @@ echo "Script started at: $scriptStartTime"
 
 # The first thing to do is to discard the last snapshot
 # We also remove any other snapshots that might exist as a result of the number of snapshots to create being lowered
-snapshotFolderToRemove=${numberOfSnapshots}
+snapshotToRemove=${numberOfSnapshots}
 # Make sure that we don't try and remove snapshot 0, but also that we always remove any extra snapshots
 if [ ${numberOfSnapshots} -lt 1 ]
 then
-	snapshotFolderToRemove=1
+	snapshotToRemove=1
 fi
-while [ -e ${snapshotDirectoryPath}/${snapshotFolderToRemove} ]
+while [ -e ${snapshotDirectoryPath}/${snapshotToRemove} ]
 do
-	rm -rf ${snapshotDirectoryPath}/${snapshotFolderToRemove}
-	snapshotFolderToRemove=$(( ${snapshotFolderToRemove} + 1 ))
+	rm -rf ${snapshotDirectoryPath}/${snapshotToRemove}
+	snapshotToRemove=$(( ${snapshotToRemove} + 1 ))
 done
 
 # Now we can rotate the other snapshots
