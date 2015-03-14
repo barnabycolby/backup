@@ -21,11 +21,10 @@ echo ${filePipePath}
 echo -n "Opening FIFO pipe....."
 mkfifo ${filePipePath}
 echo "Done."
-echo -n "Piping output to logfile as well as stdout....."
+echo "Piping output to logfile as well as stdout."
 tee ${logFile} < ${filePipePath} &
 teepid=$!
 exec > ${filePipePath} 2>&1
-echo "Done."
 
 # Clear the log
 > ${logFile}
@@ -78,3 +77,9 @@ fi
 exec 1>&- 2>&-
 wait ${teepid}
 rm ${filePipePath}
+
+# Email logs to specified address
+if [ -z ${var+emailAddress} ] && [ -z ${var+emailSubject} ]
+then
+	cat ${logFile} | mail -s "${emailSubject}" ${emailAddress}
+fi

@@ -10,3 +10,6 @@ filePipePath="/home/backup/backup/dailyBackupFilePipe"
 
 # The path of the log file
 logFile="/home/backup/backup/logs/dailyLog"
+
+# Email subject
+emailSubject="Daily Backup Log"

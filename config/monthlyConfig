@@ -10,3 +10,6 @@ filePipePath="/home/backup/backup/monthlyBackupFilePipe"
 
 # The path of the log file
 logFile="/home/backup/backup/logs/monthlyLog"
+
+# Email subject
+emailSubject="Monthly Backup Log"
