@@ -1,2 +1,5 @@
 # Ignore the test script
 test.sh
+
+# Ignore any log files
+*Log
