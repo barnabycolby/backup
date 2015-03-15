@@ -1,0 +1,7 @@
+# Configuration file for the rsync pull script.
+
+# The paths of the folders used by the script 
+backupShares='/mnt/backupShares'
+
+# Email subject
+emailSubject="Rsync Pull Failed"

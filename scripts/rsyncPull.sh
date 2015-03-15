@@ -9,8 +9,9 @@ fi
 # We take the first argument as the name of the share to backup
 shareToBackup="$1"
 
-# Read in the variables from the config file
+# Read in the variables from the config files
 source ~/backup/config/defaultConfig
+source ~/backup/config/rsyncPullConfig
 
 # The share to pull the files from
 shareToPullFrom="${backupShares}/${shareToBackup}"
@@ -37,6 +38,7 @@ then
 	# The slash on the end of the source directory is important
 	# Otherwise rsync would create a copy of the folder under the destination tree, adding another unnecessary level of depth
 	rsync -a --delete ${shareToPullFrom}/ ${destination}
+
 else
 	echo "Share to pull from has not been mounted: ${shareToPullFrom}"
 fi
