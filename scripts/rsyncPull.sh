@@ -12,13 +12,13 @@ shareToBackup="$1"
 # Read in the variables from the config file
 source ~/backup/config/defaultConfig
 
-# The shareToPullFrom must end with a slash, otherwise rsync will create an extra directory under the destination directory
-shareToPullFrom="${backupShares}/${shareToBackup}/"
+# The share to pull the files from
+shareToPullFrom="${backupShares}/${shareToBackup}"
 
 # The destination directory to pull from
 destination="${continuousDirectoryPath}/${shareToBackup}"
 
-if [ -e ${shareToPullFrom} ]
+if mount | grep ${shareToPullFrom} > /dev/null
 then
 	# Check that the destination is not a file
 	if [ -f ${destination} ]
@@ -34,7 +34,9 @@ then
 	fi
 
 	echo "Pulling from the share into the continuous backup directory."
-	rsync -a --delete ${shareToPullFrom} ${destination}
+	# The slash on the end of the source directory is important
+	# Otherwise rsync would create a copy of the folder under the destination tree, adding another unnecessary level of depth
+	rsync -a --delete ${shareToPullFrom}/ ${destination}
 else
-	echo "Either the share to pull from or the destination directory did not exist."
+	echo "Share to pull from has not been mounted: ${shareToPullFrom}"
 fi
