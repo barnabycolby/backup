@@ -18,8 +18,21 @@ shareToPullFrom="${backupShares}/${shareToBackup}/"
 # The destination directory to pull from
 destination="${continuousDirectoryPath}/${shareToBackup}"
 
-if [ -e ${shareToPullFrom} ] && [ -e ${destination} ]
+if [ -e ${shareToPullFrom} ]
 then
+	# Check that the destination is not a file
+	if [ -f ${destination} ]
+	then
+		echo "Destination ${destination} is not a directory."
+		exit 1
+	fi
+	
+	# Check that the destination directory actually exists
+	if [ ! -e ${destination} ]
+	then
+		mkdir ${destination}
+	fi
+
 	echo "Pulling from the share into the continuous backup directory."
 	rsync -a --delete ${shareToPullFrom} ${destination}
 else
