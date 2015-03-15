@@ -3,6 +3,7 @@
 # The paths of the folders used by the scripts 
 backupDirectoryPath='/mnt/testRAID'
 continuousDirectoryPath="${backupDirectoryPath}/continuous"
+backupShares='/mnt/backupShares'
 
 # Email address to send logs to
 emailAddress="barneycolby@gmail.com"
