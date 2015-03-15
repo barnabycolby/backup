@@ -3,3 +3,6 @@ test.sh
 
 # Ignore any log files
 logs/
+
+# Ignore any bin directories
+bin/
