@@ -33,6 +33,10 @@ public class BackupClient {
 			PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+			// Send the client's identity to the server
+			String identity = config.getSetting("identity");
+			socketWriter.println(identity);
+
 			// Send user's message to the server and print the response
 			BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 			String userInput;

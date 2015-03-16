@@ -2,3 +2,6 @@
 
 # The port that the client should talk to the server on
 port=10008
+
+# A string that identifies this client
+identity=barney
