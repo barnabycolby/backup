@@ -17,9 +17,6 @@ public class BackupClient {
 
 			// Get the port number to connect to the server on
 			String portNumberAsString = config.getSetting("port");
-			if (portNumberAsString == null) {
-				throw new Exception("The config file did not contain a setting for the port number.");
-			}
 			int portNumber;
 			try {
 				portNumber = Integer.parseInt(portNumberAsString);

@@ -49,8 +49,11 @@ public class ConfigReader {
 		});
 	}
 
-	public String getSetting(String settingName) {
-		// Will return null if the setting does not actually exist
+	public String getSetting(String settingName) throws Exception {
+		if (!this._configMap.containsKey(settingName)) {
+			throw new Exception("The config file did not contain the " + settingName + " setting.");
+		}
+
 		return this._configMap.get(settingName);
 	}
 }
