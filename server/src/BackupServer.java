@@ -12,7 +12,7 @@ public class BackupServer {
 				new ClientHandler(serverSocket.accept());
 			}
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			System.err.println("Something went wrong: " + e.getMessage());
 			System.exit(1);
 		}
