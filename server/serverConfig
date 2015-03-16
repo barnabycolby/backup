@@ -1,0 +1,4 @@
+# This is a configuration file for the backup server. It contains variables that define the server's settings
+
+# The port that the server should listen on
+port=10008
