@@ -8,3 +8,6 @@ serverIP=192.168.0.5
 
 # A string that identifies this client
 identity=barney
+
+# The directory to watch. Whenever it changes, the server will sync with the directory
+directoryToWatch=/home/barnaby/Documents/sambaShare

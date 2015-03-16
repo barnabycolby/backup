@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.nio.file.*;
+import static java.nio.file.StandardWatchEventKinds.*;
 
 /**
  * The client that interacts with a backup server. Currently it allows the user to send a message to the server and print's the server's response.
@@ -15,6 +17,9 @@ public class BackupClient {
 
 			// We need to send a pull request to the server when we start to make sure everything's in sync
 			backupClient.sendPullRequest();
+
+			// Create the file watcher that sends a pull request every time the directory changes
+			backupClient.sendPullRequestOnDirectoryChange();
 
 			// Finally, we need to exit
 			backupClient.exit();
@@ -94,6 +99,40 @@ public class BackupClient {
 		// Check that the pull request was successful
 		if (!response.equals("Succeeded")) {
 			throw new Exception("The pull request was not successful: " + response);
+		}
+	}
+
+	/**
+	 * Registers the directory specified in the config with a watch service. Every time the directory changes, a pull request is sent to the server.
+	 */
+	public void sendPullRequestOnDirectoryChange() throws Exception {
+		WatchService watcher = FileSystems.getDefault().newWatchService();
+		String directoryToWatchAsString = this._config.getSetting("directoryToWatch");
+		Path directoryToWatch = Paths.get(directoryToWatchAsString);
+		WatchKey key = directoryToWatch.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+
+		while (true) {
+			// Take events from the watcher queue
+			WatchKey signalledWatchKey = null;
+			try {
+				signalledWatchKey = watcher.take();
+			}
+			catch (InterruptedException e) {
+				return;
+			}
+
+			// It appears that we have to call pollEvents on the watch key even if we don't care
+			// Otherwise the key just keeps getting added to the queue over and over
+			signalledWatchKey.pollEvents();
+
+			// We don't care what the event is because we need to issue a pull request in every case
+			this.sendPullRequest();
+
+			// Now we need to reset the signalled key so that we will receive future watch events
+			boolean isWatchKeyValid = signalledWatchKey.reset();
+			if (!isWatchKeyValid) {
+				break;
+			}
 		}
 	}
 
