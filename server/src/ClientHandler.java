@@ -1,15 +1,28 @@
 import java.net.*;
 import java.io.*;
 
+/**
+ * This class handles a single backup client.
+ */
 public class ClientHandler extends Thread {
+	/**
+	 * The socket used to communicate with the client.
+	 */
 	private Socket _clientSocket;
 
+	/**
+	 * The constructor saves the socket it's given and start's the execution of the thread.
+	 * @param clientSocket The socket used to communicate with the client.
+	 */
 	public ClientHandler(Socket clientSocket) {
 		// Save the client socket and start the thread
 		this._clientSocket = clientSocket;
 		start();
 	}
 
+	/**
+	 * The main method of the thread. It listens for messages from the client and sends an echo back to the client.
+	 */
 	public void run() {
 		try {
 			System.out.println("New client handler started.");

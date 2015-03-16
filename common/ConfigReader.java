@@ -4,9 +4,20 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * The config reader class allows easy access to bash variables stored in a file. This allows the variables to store settings retrievable in code.
+ */
 public class ConfigReader {
+	/**
+	 * Stores the mapping between config settings and their values.
+	 */
 	private Map<String, String> _configMap;
 
+	/**
+	 * The constructors takes the path of the config file to read and stores the key/value pairs that it contains.
+	 * @param path The path of the config file to read.
+	 * @throws IOException Throws IOException if the file could not be read or does not exist.
+	 */
 	public ConfigReader(String path) throws IOException {
 		// Attempt to read the file specified by the path
 		Path filePath = Paths.get(path);
@@ -49,6 +60,12 @@ public class ConfigReader {
 		});
 	}
 
+	/**
+	 * Gets a setting stored in the config file.
+	 * @param settingName The name of the setting to retrieve.
+	 * @return The value of the setting.
+	 * @throws Exception If the setting does not exist within the file.
+	 */
 	public String getSetting(String settingName) throws Exception {
 		if (!this._configMap.containsKey(settingName)) {
 			throw new Exception("The config file did not contain the " + settingName + " setting.");

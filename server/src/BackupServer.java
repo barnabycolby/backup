@@ -1,6 +1,9 @@
 import java.net.*;
 import java.io.*;
 
+/**
+ * The backup server that allows communication with the backup clients. Currently it will handle multiple clients at the same time and send an echo of what the client sends.
+ */
 public class BackupServer {
 	public static void main(String[] args) {
 		// Load the config file that contains the settings for the server

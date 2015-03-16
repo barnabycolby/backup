@@ -1,6 +1,9 @@
 import java.net.*;
 import java.io.*;
 
+/**
+ * The client that interacts with a backup server. Currently it allows the user to send a message to the server and print's the server's response.
+ */
 public class BackupClient {
 	public static void main(String[] args) {
 		try {
