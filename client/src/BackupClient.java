@@ -9,8 +9,11 @@ public class BackupClient {
 	public static void main(String[] args) {
 		BackupClient backupClient = null;
 		try {
+			// Create a new instance of a BackupClient and initalise the conversation with the server
 			backupClient = new BackupClient();
 			backupClient.start();
+
+			// Finally, we need to exit
 			backupClient.exit();
 		}
 		catch (Exception e) {
