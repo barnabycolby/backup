@@ -12,6 +12,9 @@ public class ClientHandler extends Thread {
 	 */
 	private Socket _clientSocket;
 
+	/**
+	 * The config reader used to get the server's settings.
+	 */
 	private ConfigReader _config;
 
 	/**
