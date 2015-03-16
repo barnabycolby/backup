@@ -11,6 +11,7 @@ public class BackupClient {
 		try {
 			backupClient = new BackupClient();
 			backupClient.start();
+			backupClient.exit();
 		}
 		catch (Exception e) {
 			System.out.println("Something went wrong: " + e.getMessage());
@@ -71,26 +72,15 @@ public class BackupClient {
 		if (!serverResponse.equals("Recognised")) {
 			throw new Exception("The server didn't recognise our identity: " + serverResponse);
 		}
+	}
 
-		// Send user's message to the server and print the response
-		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-		String userInput;
-
-		System.out.println("If you would like to exit at any time, simply type exit.");
-		System.out.print("What would you like to send to the server? ");
-		while ((userInput = stdIn.readLine()) != null) {
-			// We send the input before checking if it was the exit message to give the server an opportunity to close its connection cleanly
-			this._socketWriter.println(userInput);
-
-			// Check if the user wants to exit
-			if (userInput.equals("exit")) {
-				System.out.println("Exiting.");
-				break;
-			}
-
-			System.out.println("response: " + this._socketReader.readLine());
-			System.out.print("What would you like to send to the server? ");
-		}
+	/**
+	 * Sends the exit command to the server.
+	 */
+	public void exit() {
+		System.out.println("Exiting.");
+		this._socketWriter.println("exit");
+		return;
 	}
 
 	/**
