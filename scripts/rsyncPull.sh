@@ -22,9 +22,8 @@ shareToPullFrom="${backupShares}/${shareToBackup}"
 destination="${continuousDirectoryPath}/${shareToBackup}"
 
 # Make sure that the share is actually mounted and attempt to mount it if not
-if mount | grep ${shareToPullFrom} > /dev/null
+if ! mount | grep ${shareToPullFrom} > /dev/null
 then
-else
 	# Attempt to mount the share
 	# This requires an entry in fstab specifying the options required to mount the share (such as username, password, workgroup)
 	# The entry must have the user option, so that we do not need root priviledges to mount the share
