@@ -4,10 +4,32 @@ import java.io.*;
 public class BackupClient {
 	public static void main(String[] args) {
 		try {
+			// Load the config file
+			ConfigReader config = null;
+			try {
+				config = new ConfigReader("./clientConfig");
+			}
+			catch (IOException e) {
+				throw new Exception("Could not open config file: " + e.getMessage());
+			}
+
 			String serverHostname = "127.0.0.1";
 
+			// Get the port number to connect to the server on
+			String portNumberAsString = config.getSetting("port");
+			if (portNumberAsString == null) {
+				throw new Exception("The config file did not contain a setting for the port number.");
+			}
+			int portNumber;
+			try {
+				portNumber = Integer.parseInt(portNumberAsString);
+			}
+			catch (NumberFormatException e) {
+				throw new Exception("The port number in the config file was not a number.");
+			}
+
 			// Create a socket and the objects for communication
-			Socket socket = new Socket(serverHostname, 10008);
+			Socket socket = new Socket(serverHostname, portNumber);
 			PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 

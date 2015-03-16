@@ -1,0 +1,4 @@
+# This is a configuration file for the backup client. It contains variables that define the client's settings
+
+# The port that the client should talk to the server on
+port=10008
