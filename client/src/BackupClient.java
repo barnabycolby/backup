@@ -13,6 +13,9 @@ public class BackupClient {
 			backupClient = new BackupClient();
 			backupClient.start();
 
+			// We need to send a pull request to the server when we start to make sure everything's in sync
+			backupClient.sendPullRequest();
+
 			// Finally, we need to exit
 			backupClient.exit();
 		}
@@ -77,6 +80,20 @@ public class BackupClient {
 		String serverResponse = this._socketReader.readLine();
 		if (!serverResponse.equals("Recognised")) {
 			throw new Exception("The server didn't recognise our identity: " + serverResponse);
+		}
+	}
+
+	/**
+	 * Send a pull request to the server asking it to sync the files.
+	 */
+	public void sendPullRequest() throws Exception {
+		System.out.println("Sending pull request to server.");
+		this._socketWriter.println("PullRequest");
+		String response = this._socketReader.readLine();
+
+		// Check that the pull request was successful
+		if (!response.equals("Succeeded")) {
+			throw new Exception("The pull request was not successful: " + response);
 		}
 	}
 
