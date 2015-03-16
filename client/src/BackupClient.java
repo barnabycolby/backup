@@ -38,6 +38,7 @@ public class BackupClient {
 	public BackupClient() throws Exception {
 		// Load the config file
 		try {
+			System.out.println("Reading config file.");
 			_config = new ConfigReader("./clientConfig");
 		}
 		catch (IOException e) {
@@ -57,6 +58,7 @@ public class BackupClient {
 		}
 
 		// Create a socket and the objects for communication
+		System.out.println("Opening socket for communication with the server.");
 		this._socket = new Socket(serverIP, portNumber);
 		this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
 		this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
@@ -67,6 +69,7 @@ public class BackupClient {
 	 */
 	public void start() throws Exception {
 		// Send the client's identity to the server
+		System.out.println("Sending identitifier to server.");
 		String identity = this._config.getSetting("identity");
 		this._socketWriter.println(identity);
 
@@ -90,6 +93,7 @@ public class BackupClient {
 	 * Cleans up any buffers, sockets, etc. that need to be closed.
 	 */
 	public void cleanUp() throws IOException {
+		System.out.println("Cleaning up.");
 		this._socket.close();
 		this._socketWriter.close();
 		this._socketReader.close();
