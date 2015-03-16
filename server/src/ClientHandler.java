@@ -39,7 +39,7 @@ public class ClientHandler extends Thread {
 	 */
 	public void run() {
 		try {
-			System.out.println("New client handler started.");
+			System.out.println("New client connnected.");
 
 			// Set up the objects and variables for communication with the client
 			PrintWriter socketWriter = new PrintWriter(_clientSocket.getOutputStream(), true);
