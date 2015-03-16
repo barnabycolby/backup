@@ -83,7 +83,6 @@ public class ClientHandler extends Thread {
 							this.performPull();
 							int exitCode = this._shellCommandExecutor.getLastExitCode();
 							if (exitCode == 0) {
-								System.out.println("Pull succeeded.");
 								socketWriter.println("Succeeded");
 							}
 							else {
