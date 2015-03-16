@@ -16,7 +16,7 @@ public class BackupClient {
 				throw new Exception("Could not open config file: " + e.getMessage());
 			}
 
-			String serverHostname = "127.0.0.1";
+			String serverIP = config.getSetting("serverIP");
 
 			// Get the port number to connect to the server on
 			String portNumberAsString = config.getSetting("port");
@@ -29,7 +29,7 @@ public class BackupClient {
 			}
 
 			// Create a socket and the objects for communication
-			Socket socket = new Socket(serverHostname, portNumber);
+			Socket socket = new Socket(serverIP, portNumber);
 			PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
