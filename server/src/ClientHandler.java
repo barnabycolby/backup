@@ -18,6 +18,11 @@ public class ClientHandler extends Thread {
 	private ConfigReader _config;
 
 	/**
+	 * The string used to uniquely identify the client.
+	 */
+	private String _clientIdentity;
+
+	/**
 	 * The constructor saves the socket it's given and start's the execution of the thread.
 	 * @param config The config reader that this client handler should get settings from.
 	 * @param clientSocket The socket used to communicate with the client.
@@ -42,31 +47,42 @@ public class ClientHandler extends Thread {
 			String inputLine;
 
 			// Check that the first message is an identity that this server recognises
-			String clientIdentity = socketReader.readLine();
+			this._clientIdentity = socketReader.readLine();
 			String knownClientIdentitiesString = this._config.getSetting("knownClientIdentities");
 			List knownClientIdentities = Arrays.asList(knownClientIdentitiesString.split(","));
-			if (!knownClientIdentities.contains(clientIdentity)) {
+			if (!knownClientIdentities.contains(this._clientIdentity)) {
 				socketWriter.println("I can't talk to you, I don't recognise your identity.");
 				socketWriter.close();
 				socketReader.close();
 				this._clientSocket.close();
-				System.out.println("Refused client as I didn't recognise their identity: " + clientIdentity);
+				System.out.println("Refused client as I didn't recognise their identity: " + this._clientIdentity);
 				return;
 			}
 			socketWriter.println("Recognised");
 
-			// Echo whatever messages the client sends
+			// Listen to and handle the client's commands
 			while ((inputLine = socketReader.readLine()) != null) {
-				System.out.println("Message from client: " + inputLine);
+				switch (inputLine) {
+					// Check whether the client wants to exit
+					case "exit":
+						System.out.println("Client is exiting, closing the connection this side as well.");
+						break;
 
-				// Check whether the client wants to exit
-				if (inputLine.equals("exit")) {
-					System.out.println("Client is exiting, closing the connection this side as well.");
-					break;
-				}
+					// Check whether the client has requested a pull
+					case "PullRequest":
+						try {
+							this.performPull();
+						}
+						catch (Exception e) {
+							System.out.println("The pull failed: " + e.getMessage());
+							socketWriter.println("The pull failed: " + e.getMessage());
+						}
+						break;
 
-				// Send an echo back to the client
-				socketWriter.println("Echo: " + inputLine);
+					default:
+						System.out.println("Client sent unknown command: " + inputLine);
+						socketWriter.println("Unknown command");
+					}
 			}
 
 			// Clean up
@@ -78,5 +94,13 @@ public class ClientHandler extends Thread {
 			System.err.println("Something went wrong with the client handler: " + e.getMessage());
 			System.exit(1);
 		}
+	}
+
+	/**
+	 * Performs a pull operation, pulling the client's files across a share and into the continuous backup directory.
+	 * @throws Exception Throws an exception if the pull failed for any reason. The exception will contain a message detailing why the pull failed.
+	 */
+	private void performPull() throws Exception {
+		throw new Exception("The pull functionality is not implemented yet.");
 	}
 }
