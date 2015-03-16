@@ -18,17 +18,14 @@ public class ShellCommandExecutor {
 	 * @return The output of the command.
 	 */
 	public String execute(String command) throws IOException,InterruptedException {
-		System.out.println("Executing command: " + command);
 		// Exectue the command
 		Process process = Runtime.getRuntime().exec(command);
 		process.waitFor();
 
 		// Store the exit code of the command so that we can return it to the user if they ask for it
-		System.out.println("Storing exit code.");
 		this._lastExitCode = process.exitValue();
 
 		// Collect the commands output
-		System.out.println("Collecting command output.");
 		StringBuffer commandOutput = new StringBuffer();
 		BufferedReader processOutputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		String line = "";
@@ -36,7 +33,6 @@ public class ShellCommandExecutor {
 			commandOutput.append(line + "\n");
 		}
 
-		System.out.println("Returning command output.");
 		return commandOutput.toString();
 	}
 
