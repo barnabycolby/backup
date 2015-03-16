@@ -128,6 +128,6 @@ public class ClientHandler extends Thread {
 
 		// Execute the command
 		String commandOutput = this._shellCommandExecutor.execute(rsyncPullCommand);
-		System.out.println("Command output: " + commandOutput);
+		System.out.println("Pull output: " + commandOutput);
 	}
 }
