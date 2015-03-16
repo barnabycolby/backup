@@ -23,14 +23,24 @@ public class ClientHandler extends Thread {
 	private String _clientIdentity;
 
 	/**
+	 * The object used to help us execute commands on the local system.
+	 */
+	private ShellCommandExecutor _shellCommandExecutor;
+
+	/**
 	 * The constructor saves the socket it's given and start's the execution of the thread.
 	 * @param config The config reader that this client handler should get settings from.
 	 * @param clientSocket The socket used to communicate with the client.
 	 */
 	public ClientHandler(ConfigReader config, Socket clientSocket) {
-		// Save the objects passed in as arguments and start the thread
+		// Save the objects passed in as arguments
 		this._clientSocket = clientSocket;
 		this._config = config;
+
+		// Initialise any other instance variables
+		this._shellCommandExecutor = new ShellCommandExecutor();
+
+		// Start the thread
 		start();
 	}
 
@@ -71,7 +81,18 @@ public class ClientHandler extends Thread {
 					// Check whether the client has requested a pull
 					case "PullRequest":
 						try {
+							System.out.println("Performing pull for client " + this._clientIdentity);
 							this.performPull();
+							int exitCode = this._shellCommandExecutor.getLastExitCode();
+							if (exitCode == 0) {
+								System.out.println("Pull succeeded.");
+								socketWriter.println("Succeeded");
+							}
+							else {
+								String errorMessage = "Pull failed with exit code: " + exitCode;
+								System.out.println(errorMessage);
+								socketWriter.println(errorMessage);
+							}
 						}
 						catch (Exception e) {
 							System.out.println("The pull failed: " + e.getMessage());
@@ -101,6 +122,12 @@ public class ClientHandler extends Thread {
 	 * @throws Exception Throws an exception if the pull failed for any reason. The exception will contain a message detailing why the pull failed.
 	 */
 	private void performPull() throws Exception {
-		throw new Exception("The pull functionality is not implemented yet.");
+		// Build up the command
+		String rsyncPullScriptPath = this._config.getSetting("rsyncPullScriptPath");
+		String rsyncPullCommand = "sh " + rsyncPullScriptPath + " " + this._clientIdentity;
+
+		// Execute the command
+		String commandOutput = this._shellCommandExecutor.execute(rsyncPullCommand);
+		System.out.println("Command output: " + commandOutput);
 	}
 }

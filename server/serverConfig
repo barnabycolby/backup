@@ -5,3 +5,6 @@ port=10008
 
 # A comma separated list of the known client identities that should be allowed to connect to this server
 knownClientIdentities=dom,barney,ruth
+
+# The path of the rsync pull script
+rsyncPullScriptPath=../scripts/rsyncPull.sh
