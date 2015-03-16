@@ -50,7 +50,7 @@ public class ClientHandler extends Thread {
 			socketReader.close();
 			_clientSocket.close();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			System.err.println("Something went wrong with the client handler: " + e.getMessage());
 			System.exit(1);
 		}
