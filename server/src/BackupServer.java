@@ -3,9 +3,34 @@ import java.io.*;
 
 public class BackupServer {
 	public static void main(String[] args) {
+		// Load the config file that contains the settings for the server
+		String configFilePath = "./serverConfig";
+		ConfigReader config = null;
+		try {
+			config = new ConfigReader(configFilePath);
+		}
+		catch (IOException e) {
+			System.err.println("Could not read the config file: " + configFilePath);
+			System.exit(1);
+		}
+
 		ServerSocket serverSocket = null;
 		try {
-			serverSocket = new ServerSocket(10008);
+			// Read the port number from the config file
+			String portNumberAsString = config.getSetting("port");
+			if (portNumberAsString == null) {
+				throw new Exception("The config file did not contain a port setting.");
+			}
+			int portNumber;
+			try {
+				portNumber = Integer.parseInt(portNumberAsString);
+			}
+			catch (NumberFormatException e) {
+				throw new Exception("The port number in the config file was not a number.");
+			}
+
+			// Listen to the port
+			serverSocket = new ServerSocket(portNumber);
 			System.out.println("Server socket created.");
 			while (true) {
 				System.out.println("Waiting for connection.");
