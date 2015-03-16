@@ -15,10 +15,20 @@ public class BackupClient {
 			BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 			String userInput;
 
+			System.out.println("If you would like to exit at any time, simply type exit.");
+			System.out.print("What would you like to send to the server? ");
 			while ((userInput = stdIn.readLine()) != null) {
+				// We send the input before checking if it was the exit message to give the server an opportunity to close its connection cleanly
 				socketWriter.println(userInput);
 
+				// Check if the user wants to exit
+				if (userInput.equals("exit")) {
+					System.out.println("Exiting.");
+					break;
+				}
+
 				System.out.println("response: " + socketReader.readLine());
+				System.out.print("What would you like to send to the server? ");
 			}
 
 			// Close the socket

@@ -17,12 +17,19 @@ public class ClientHandler extends Thread {
 			// Read the message from the client and send a response
 			PrintWriter socketWriter = new PrintWriter(_clientSocket.getOutputStream(), true);
 			BufferedReader socketReader = new BufferedReader(new InputStreamReader(_clientSocket.getInputStream()));
-
 			String inputLine;
 
 			while ((inputLine = socketReader.readLine()) != null) {
 				System.out.println("Message from client: " + inputLine);
-				socketWriter.println("Huh?");
+
+				// Check whether the client wants to exit
+				if (inputLine.equals("exit")) {
+					System.out.println("Client is exiting, closing the connection this side as well.");
+					break;
+				}
+
+				// Send an echo back to the client
+				socketWriter.println("Echo: " + inputLine);
 			}
 
 			// Clean up
