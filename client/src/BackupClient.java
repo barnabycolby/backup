@@ -37,6 +37,12 @@ public class BackupClient {
 			String identity = config.getSetting("identity");
 			socketWriter.println(identity);
 
+			// Check that the server recognised our identity
+			String serverResponse = socketReader.readLine();
+			if (!serverResponse.equals("Recognised")) {
+				throw new Exception("The server didn't recognise our identity: " + serverResponse);
+			}
+
 			// Send user's message to the server and print the response
 			BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 			String userInput;

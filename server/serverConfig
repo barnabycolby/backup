@@ -2,3 +2,6 @@
 
 # The port that the server should listen on
 port=10008
+
+# A comma separated list of the known client identities that should be allowed to connect to this server
+knownClientIdentities=dom,barney,ruth
