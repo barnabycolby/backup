@@ -49,8 +49,6 @@ public class ClientHandler extends Thread {
 	 */
 	public void run() {
 		try {
-			System.out.println("New client connnected.");
-
 			// Set up the objects and variables for communication with the client
 			PrintWriter socketWriter = new PrintWriter(_clientSocket.getOutputStream(), true);
 			BufferedReader socketReader = new BufferedReader(new InputStreamReader(_clientSocket.getInputStream()));

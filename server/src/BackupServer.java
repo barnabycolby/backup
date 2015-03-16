@@ -35,6 +35,7 @@ public class BackupServer {
 			while (true) {
 				System.out.println("Waiting for connection.");
 				new ClientHandler(config, serverSocket.accept());
+				System.out.println("New client connected.");
 			}
 		}
 		catch (Exception e) {
