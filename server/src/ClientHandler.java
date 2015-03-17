@@ -13,6 +13,16 @@ public class ClientHandler extends Thread {
 	private Socket _clientSocket;
 
 	/**
+	 * The writer used to send messages to the client.
+	 */
+	private PrintWriter _socketWriter;
+
+	/**
+	 * The reader used to receive messages from the client.
+	 */
+	private BufferedReader _socketReader;
+
+	/**
 	 * The config reader used to get the server's settings.
 	 */
 	private ConfigReader _config;
@@ -50,26 +60,24 @@ public class ClientHandler extends Thread {
 	public void run() {
 		try {
 			// Set up the objects and variables for communication with the client
-			PrintWriter socketWriter = new PrintWriter(_clientSocket.getOutputStream(), true);
-			BufferedReader socketReader = new BufferedReader(new InputStreamReader(_clientSocket.getInputStream()));
+			this._socketWriter = new PrintWriter(_clientSocket.getOutputStream(), true);
+			this._socketReader = new BufferedReader(new InputStreamReader(_clientSocket.getInputStream()));
 			String inputLine;
 
 			// Check that the first message is an identity that this server recognises
-			this._clientIdentity = socketReader.readLine();
+			this._clientIdentity = this._socketReader.readLine();
 			String knownClientIdentitiesString = this._config.getSetting("knownClientIdentities");
 			List knownClientIdentities = Arrays.asList(knownClientIdentitiesString.split(","));
 			if (!knownClientIdentities.contains(this._clientIdentity)) {
-				socketWriter.println("I can't talk to you, I don't recognise your identity.");
-				socketWriter.close();
-				socketReader.close();
-				this._clientSocket.close();
+				this._socketWriter.println("I can't talk to you, I don't recognise your identity.");
+				this.cleanUp();
 				System.out.println("Refused client as I didn't recognise their identity: " + this._clientIdentity);
 				return;
 			}
-			socketWriter.println("Recognised");
+			this._socketWriter.println("Recognised");
 
 			// Listen to and handle the client's commands
-			while ((inputLine = socketReader.readLine()) != null) {
+			while ((inputLine = this._socketReader.readLine()) != null) {
 				switch (inputLine) {
 					// Check whether the client wants to exit
 					case "exit":
@@ -83,30 +91,27 @@ public class ClientHandler extends Thread {
 							this.performPull();
 							int exitCode = this._shellCommandExecutor.getLastExitCode();
 							if (exitCode == 0) {
-								socketWriter.println("Succeeded");
+								this._socketWriter.println("Succeeded");
 							}
 							else {
 								String errorMessage = "Pull failed with exit code: " + exitCode;
 								System.out.println(errorMessage);
-								socketWriter.println(errorMessage);
+								this._socketWriter.println(errorMessage);
 							}
 						}
 						catch (Exception e) {
 							System.out.println("The pull failed: " + e.getMessage());
-							socketWriter.println("The pull failed: " + e.getMessage());
+							this._socketWriter.println("The pull failed: " + e.getMessage());
 						}
 						break;
 
 					default:
 						System.out.println("Client sent unknown command: " + inputLine);
-						socketWriter.println("Unknown command");
+						this._socketWriter.println("Unknown command");
 					}
 			}
 
-			// Clean up
-			socketWriter.close();
-			socketReader.close();
-			this._clientSocket.close();
+			this.cleanUp();
 		}
 		catch (Exception e) {
 			System.err.println("Something went wrong with the client handler: " + e.getMessage());
@@ -126,5 +131,19 @@ public class ClientHandler extends Thread {
 		// Execute the command
 		String commandOutput = this._shellCommandExecutor.execute(rsyncPullCommand);
 		System.out.println("Pull output: " + commandOutput);
+	}
+
+	/**
+	 * Closes socket and objects used for communicating with the socket.
+	 */
+	private void cleanUp() {
+		try {
+			this._socketWriter.close();
+			this._socketReader.close();
+			this._clientSocket.close();
+		}
+		catch (IOException e) {
+			// Absorb any communication errors as we don't care at this point
+		}
 	}
 }
