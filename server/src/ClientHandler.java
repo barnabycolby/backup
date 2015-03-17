@@ -98,6 +98,8 @@ public class ClientHandler extends Thread {
 									break;
 								case 1:
 									pullOutcome = "Unknown error occurred.";
+									String pullCommandOutput = this._shellCommandExecutor.getLastCommandOutput();
+									this.attemptToEmailBarney("Rsync Pull Failed", pullCommandOutput);
 									break;
 								case 2:
 									pullOutcome = "The pull script was passed the wrong number of arguments.";
@@ -154,6 +156,33 @@ public class ClientHandler extends Thread {
 
 		// Return the exit code
 		return exitCode;
+	}
+
+	/**
+	 * Attempts to send an email to Barney with the specified subject and body.
+	 * @param subject The subject of the email.
+	 * @param body The contents of the email.
+	 */
+	public void attemptToEmailBarney(String subject, String body) {
+		// Retrieve the path of the send email script
+		String scriptPath = null;
+		try {
+			scriptPath = this._config.getSetting("sendMailScriptPath");
+		}
+		catch (Exception ex) {
+			// This is only supposed to be an attempt so we can absorb any exceptions that occur
+			// Don't attempt to send the email if the email address could not be retrieved
+			System.out.println("Couldn't read sendMailScriptPath from config file.");
+			return;
+		}
+
+		// Actually send the email
+		try {
+			this._shellCommandExecutor.execute("sh", scriptPath, "\"" + subject + "\"", "\"" + body + "\"");
+		}
+		catch (Exception ex) {
+			// This is only supposed to be an attempt so we can absorb any exceptions that occur
+		}
 	}
 
 	/**

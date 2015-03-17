@@ -8,3 +8,4 @@ knownClientIdentities=dom,barney,ruth
 
 # The path of the rsync pull script
 rsyncPullScriptPath=../scripts/rsyncPull.sh
+sendMailScriptPath=../scripts/sendMail.sh
