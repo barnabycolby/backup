@@ -13,7 +13,14 @@ public class BackupClient {
 		try {
 			// Create a new instance of a BackupClient and initalise the conversation with the server
 			backupClient = new BackupClient();
-			backupClient.start();
+			boolean startSuccessful = false;
+			while (!startSuccessful) {
+				startSuccessful = backupClient.start();
+				if (!startSuccessful) {
+					System.out.println("Waiting before we try to start communication again.");
+					Thread.sleep(2000);
+				}
+			}
 
 			// We need to send a pull request to the server when we start to make sure everything's in sync
 			backupClient.sendPullRequest();
@@ -41,7 +48,7 @@ public class BackupClient {
 	private BufferedReader _socketReader;
 
 	/**
-	 * Loads the config file and initialises the socket and it's reader/writer helpers.
+	 * Loads the config file.
 	 */
 	public BackupClient() throws Exception {
 		// Load the config file
@@ -53,6 +60,14 @@ public class BackupClient {
 			throw new Exception("Could not open config file: " + e.getMessage());
 		}
 
+	}
+
+	/**
+	 * Initialises the objects used for communication with the server and starts the communication.
+	 * @return True if the communication with the server was successfully initiated and false otherwise. This usually indicates a recoverable error.
+	 * @throws Exception If something unrecoverable happened, such as missing settings in the config file.
+	 */
+	public boolean start() throws Exception {
 		String serverIP = this._config.getSetting("serverIP");
 
 		// Get the port number to connect to the server on
@@ -66,26 +81,30 @@ public class BackupClient {
 		}
 
 		// Create a socket and the objects for communication
-		System.out.println("Opening socket for communication with the server.");
-		this._socket = new Socket(serverIP, portNumber);
-		this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
-		this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
-	}
+		try {
+			System.out.println("Opening socket for communication with the server.");
+			this._socket = new Socket(serverIP, portNumber);
+			this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
+			this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
 
-	/**
-	 * Start the communication with the server.
-	 */
-	public void start() throws Exception {
-		// Send the client's identity to the server
-		System.out.println("Sending identitifier to server.");
-		String identity = this._config.getSetting("identity");
-		this._socketWriter.println(identity);
+			// Send the client's identity to the server
+			System.out.println("Sending identitifier to server.");
+			String identity = this._config.getSetting("identity");
+			this._socketWriter.println(identity);
 
-		// Check that the server recognised our identity
-		String serverResponse = this._socketReader.readLine();
-		if (!serverResponse.equals("Recognised")) {
-			throw new Exception("The server didn't recognise our identity: " + serverResponse);
+			// Check that the server recognised our identity
+			String serverResponse = this._socketReader.readLine();
+			if (!serverResponse.equals("Recognised")) {
+				throw new IOException("The server didn't recognise our identity: " + serverResponse);
+			}
 		}
+		catch (IOException e) {
+			System.out.println("Failed to communicate with the server: " + e.getMessage());
+			return false;
+		}
+
+		// Indicate success
+		return true;
 	}
 
 	/**
