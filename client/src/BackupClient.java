@@ -9,18 +9,37 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class BackupClient {
 
 	public static void main(String[] args) {
+		// Load the config file
+		ConfigReader config = null;
+		try {
+			System.out.println("Reading config file.");
+			config = new ConfigReader("./clientConfig");
+		}
+		catch (IOException e) {
+			System.out.println("Could not open config file: " + e.getMessage());
+			System.exit(1);
+		}
+
+		// Load the log file writer
+		String logFilePath = "./log";
+		try {
+			logFilePath = config.getSetting("logFilePath");
+		}
+		catch (Exception e) {}
+		Tee tee = new Tee(logFilePath);
+
 		BackupClient backupClient = null;
 		try {
 			// We want to keep trying to communicate with the server until it's successful
 			while (true) {
 				try {
 					// Create a new instance of a BackupClient and initalise the conversation with the server
-					backupClient = new BackupClient();
+					backupClient = new BackupClient(config, tee);
 					boolean startSuccessful = false;
 					while (!startSuccessful) {
 						startSuccessful = backupClient.start();
 						if (!startSuccessful) {
-							System.out.println("Waiting before we try to start communication again.");
+							tee.println("Waiting before we try to start communication again.");
 							Thread.sleep(backupClient.getTimeoutLength());
 						}
 					}
@@ -46,7 +65,7 @@ public class BackupClient {
 			backupClient.exit();
 		}
 		catch (Exception e) {
-			System.out.println("Something went wrong: " + e.getMessage());
+			tee.println("Something went wrong: " + e.getMessage());
 		}
 		finally {
 			backupClient.cleanUp();
@@ -54,6 +73,7 @@ public class BackupClient {
 	}
 
 	private ConfigReader _config;
+	private Tee _tee;
 	private Socket _socket;
 	private PrintWriter _socketWriter;
 	private BufferedReader _socketReader;
@@ -61,16 +81,9 @@ public class BackupClient {
 	/**
 	 * Loads the config file.
 	 */
-	public BackupClient() throws Exception {
-		// Load the config file
-		try {
-			System.out.println("Reading config file.");
-			_config = new ConfigReader("./clientConfig");
-		}
-		catch (IOException e) {
-			throw new Exception("Could not open config file: " + e.getMessage());
-		}
-
+	public BackupClient(ConfigReader config, Tee tee) throws Exception {
+		this._config = config;
+		this._tee = tee;
 	}
 
 	/**
@@ -112,13 +125,13 @@ public class BackupClient {
 
 		// Create a socket and the objects for communication
 		try {
-			System.out.println("Opening socket for communication with the server.");
+			this._tee.println("Opening socket for communication with the server.");
 			this._socket = new Socket(serverIP, portNumber);
 			this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
 			this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
 
 			// Send the client's identity to the server
-			System.out.println("Sending identitifier to server.");
+			this._tee.println("Sending identitifier to server.");
 			String identity = this._config.getSetting("identity");
 			this._socketWriter.println(identity);
 
@@ -129,7 +142,7 @@ public class BackupClient {
 			}
 		}
 		catch (IOException e) {
-			System.out.println("Failed to communicate with the server: " + e.getMessage());
+			this._tee.println("Failed to communicate with the server: " + e.getMessage());
 			return false;
 		}
 
@@ -143,7 +156,7 @@ public class BackupClient {
 	 * @throws IOException Thrown if communication with the server fails for some reason.
 	 */
 	public boolean sendPullRequest() throws IOException {
-		System.out.println("Sending pull request to server.");
+		this._tee.println("Sending pull request to server.");
 		this._socketWriter.println("PullRequest");
 		String response = this._socketReader.readLine();
 
@@ -154,7 +167,7 @@ public class BackupClient {
 
 		// Check that the pull request was successful
 		if (!response.equals("Succeeded")) {
-			System.out.println("The pull request was not successful: " + response);
+			this._tee.println("The pull request was not successful: " + response);
 			return false;
 		}
 
@@ -199,7 +212,7 @@ public class BackupClient {
 	 * Sends the exit command to the server.
 	 */
 	public void exit() {
-		System.out.println("Exiting.");
+		this._tee.println("Exiting.");
 		this._socketWriter.println("exit");
 		return;
 	}
@@ -208,7 +221,7 @@ public class BackupClient {
 	 * Cleans up any buffers, sockets, etc. that need to be closed.
 	 */
 	public void cleanUp() {
-		System.out.println("Cleaning up.");
+		this._tee.println("Cleaning up.");
 		try {
 			this._socket.close();
 			this._socketWriter.close();

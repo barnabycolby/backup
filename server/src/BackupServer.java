@@ -17,6 +17,14 @@ public class BackupServer {
 			System.exit(1);
 		}
 
+		// Load the log file writer
+		String logFilePath = "./log";
+		try {
+			logFilePath = config.getSetting("logFilePath");
+		}
+		catch (Exception e) {}
+		Tee tee = new Tee(logFilePath);
+
 		ServerSocket serverSocket = null;
 		try {
 			// Read the port number from the config file
@@ -31,25 +39,27 @@ public class BackupServer {
 
 			// Listen to the port
 			serverSocket = new ServerSocket(portNumber);
-			System.out.println("Server socket created.");
+			tee.println("Server socket created.");
 			while (true) {
-				System.out.println("Waiting for connection.");
-				new ClientHandler(config, serverSocket.accept());
-				System.out.println("New client connected.");
+				tee.println("Waiting for connection.");
+				new ClientHandler(config, tee, serverSocket.accept());
+				tee.println("New client connected.");
 			}
 		}
 		catch (Exception e) {
-			System.err.println("Something went wrong: " + e.getMessage());
+			tee.println("Something went wrong: " + e.getMessage());
 			System.exit(1);
 		}
 		finally {
-			System.out.println("Closing server socket.");
+			tee.println("Closing server socket.");
 			try {
 				serverSocket.close();
 			}
 			catch (IOException e) {
-				System.out.println("Failed to close server socket: " + e.getMessage());
+				tee.println("Failed to close server socket: " + e.getMessage());
 			}
+
+			tee.cleanUp();
 		}
 	}
 }

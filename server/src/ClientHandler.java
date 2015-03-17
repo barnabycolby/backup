@@ -28,6 +28,11 @@ public class ClientHandler extends Thread {
 	private ConfigReader _config;
 
 	/**
+	 * The tee used to write output.
+	 */
+	private Tee _tee;
+
+	/**
 	 * The string used to uniquely identify the client.
 	 */
 	private String _clientIdentity;
@@ -41,11 +46,13 @@ public class ClientHandler extends Thread {
 	 * The constructor saves the socket it's given and start's the execution of the thread.
 	 * @param config The config reader that this client handler should get settings from.
 	 * @param clientSocket The socket used to communicate with the client.
+	 * @param tee The tee object used to print output.
 	 */
-	public ClientHandler(ConfigReader config, Socket clientSocket) {
+	public ClientHandler(ConfigReader config, Tee tee, Socket clientSocket) {
 		// Save the objects passed in as arguments
 		this._clientSocket = clientSocket;
 		this._config = config;
+		this._tee = tee;
 
 		// Initialise any other instance variables
 		this._shellCommandExecutor = new ShellCommandExecutor();
@@ -71,7 +78,7 @@ public class ClientHandler extends Thread {
 			if (!knownClientIdentities.contains(this._clientIdentity)) {
 				this._socketWriter.println("I can't talk to you, I don't recognise your identity.");
 				this.cleanUp();
-				System.out.println("Refused client as I didn't recognise their identity: " + this._clientIdentity);
+				this._tee.println("Refused client as I didn't recognise their identity: " + this._clientIdentity);
 				return;
 			}
 			this._socketWriter.println("Recognised");
@@ -81,13 +88,13 @@ public class ClientHandler extends Thread {
 				switch (inputLine) {
 					// Check whether the client wants to exit
 					case "exit":
-						System.out.println("Client is exiting, closing the connection this side as well.");
+						this._tee.println("Client is exiting, closing the connection this side as well.");
 						break;
 
 					// Check whether the client has requested a pull
 					case "PullRequest":
 						try {
-							System.out.println("Performing pull for client " + this._clientIdentity);
+							this._tee.println("Performing pull for client " + this._clientIdentity);
 							int exitCode = this.performPull();
 
 							String pullOutcome = null;
@@ -118,17 +125,17 @@ public class ClientHandler extends Thread {
 									break;
 
 							}
-							System.out.println(pullOutcome);
+							this._tee.println(pullOutcome);
 							this._socketWriter.println(pullOutcome);
 						}
 						catch (Exception e) {
-							System.out.println("The pull failed: " + e.getMessage());
+							this._tee.println("The pull failed: " + e.getMessage());
 							this._socketWriter.println("The pull failed: " + e.getMessage());
 						}
 						break;
 
 					default:
-						System.out.println("Client sent unknown command: " + inputLine);
+						this._tee.println("Client sent unknown command: " + inputLine);
 						this._socketWriter.println("Unknown command");
 					}
 			}
@@ -136,7 +143,7 @@ public class ClientHandler extends Thread {
 			this.cleanUp();
 		}
 		catch (Exception e) {
-			System.err.println("Something went wrong with the client handler: " + e.getMessage());
+			this._tee.println("Something went wrong with the client handler: " + e.getMessage());
 			this.cleanUp();
 			return;
 		}
@@ -172,7 +179,7 @@ public class ClientHandler extends Thread {
 		catch (Exception ex) {
 			// This is only supposed to be an attempt so we can absorb any exceptions that occur
 			// Don't attempt to send the email if the email address could not be retrieved
-			System.out.println("Couldn't read sendMailScriptPath from config file.");
+			this._tee.println("Couldn't read sendMailScriptPath from config file.");
 			return;
 		}
 
