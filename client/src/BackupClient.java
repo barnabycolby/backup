@@ -6,70 +6,66 @@ import static java.nio.file.StandardWatchEventKinds.*;
 /**
  * The client that interacts with a backup server. Currently it allows the user to send a message to the server and print's the server's response.
  */
-public class BackupClient {
+public class BackupClient extends Thread {
 
 	public static void main(String[] args) {
-		// Load the config file
-		ConfigReader config = null;
+		Tee tee = null;
 		try {
-			System.out.println("Reading config file.");
-			config = new ConfigReader("./clientConfig");
-		}
-		catch (IOException e) {
-			System.out.println("Could not open config file: " + e.getMessage());
-			System.exit(1);
-		}
-
-		// Load the log file writer
-		String logFilePath = "./log";
-		try {
-			logFilePath = config.getSetting("logFilePath");
-		}
-		catch (Exception e) {}
-		Tee tee = new Tee(logFilePath);
-
-		BackupClient backupClient = null;
-		try {
-			// We want to keep trying to communicate with the server until it's successful
-			while (true) {
-				try {
-					// Create a new instance of a BackupClient and initalise the conversation with the server
-					backupClient = new BackupClient(config, tee);
-					boolean startSuccessful = false;
-					while (!startSuccessful) {
-						startSuccessful = backupClient.start();
-						if (!startSuccessful) {
-							tee.println("Waiting before we try to start communication again.");
-							Thread.sleep(backupClient.getTimeoutLength());
-						}
-					}
-
-					// We need to send a pull request to the server when we start to make sure everything's in sync
-					backupClient.sendPullRequest();
-
-					// Create the file watcher that sends a pull request every time the directory changes
-					backupClient.sendPullRequestOnDirectoryChange();
-
-					// If we make it to this point then we can exit the loop
-					break;
-				}
-				catch (IOException e) {
-					// If an IOException occurs then communication with the server probably failed
-					// The best thing we can do is close all communication with the server, wait for a while, and try again
-					backupClient.cleanUp();
-					Thread.sleep(backupClient.getTimeoutLength());
-				}
+			// Load the config file
+			ConfigReader config = null;
+			try {
+				System.out.println("Reading config file.");
+				config = new ConfigReader("./clientConfig");
+			}
+			catch (IOException e) {
+				System.out.println("Could not open config file: " + e.getMessage());
+				System.exit(1);
 			}
 
-			// Finally, we need to exit
-			backupClient.exit();
+			// Load the log file writer
+			String logFilePath = "./log";
+			try {
+				logFilePath = config.getSetting("logFilePath");
+			}
+			catch (Exception e) {}
+			tee = new Tee(logFilePath);
+
+			// Create the backup client
+			BackupClient backupClient = new BackupClient(config, tee);
+
+			// Add shutdown hook so that we can gracefully shutdown
+			final Tee finalTee = tee;
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					BackupClient.gracefullyExit(finalTee, backupClient);				
+				}
+			}));
+
+			// Listen for the user's input and exit if they ever press 'q'
+			Console console = System.console();
+			String userInput = "";
+			while (!userInput.equals("q")) {
+				tee.println("Press 'q' and then enter if you want to exit.");
+				userInput = console.readLine();
+			}
+
+			gracefullyExit(tee, backupClient);
 		}
-		catch (Exception e) {
-			tee.println("Something went wrong: " + e.getMessage());
+		catch (Exception ex) {
+			tee.println("Something went wrong: " + ex.getMessage());
 		}
-		finally {
-			backupClient.cleanUp();
+	}
+
+	public static void gracefullyExit(Tee tee, BackupClient backupClient) {
+		// Tell the client to exit and wait for it
+		tee.println("Waiting for backup client to exit.");
+		backupClient.interrupt();
+		backupClient.exit();
+		try {
+			backupClient.join();
 		}
+		catch (InterruptedException ex) {}
 	}
 
 	private ConfigReader _config;
@@ -82,8 +78,56 @@ public class BackupClient {
 	 * Loads the config file.
 	 */
 	public BackupClient(ConfigReader config, Tee tee) throws Exception {
+		// Store the arguments passed to us in instance variables
 		this._config = config;
 		this._tee = tee;
+
+
+		// Start the thread
+		this.start();
+	}
+
+	public void initialiseCommunication() throws Exception {
+		// Get the port number and serverIP
+		String serverIP = this._config.getSetting("serverIP");
+		String portNumberAsString = this._config.getSetting("port");
+		int portNumber;
+		try {
+			portNumber = Integer.parseInt(portNumberAsString);
+		}
+		catch (NumberFormatException e) {
+			throw new Exception("The port number in the config file was not a number.");
+		}
+
+		// Create a socket and the objects for communication
+		try {
+			this._tee.println("Opening socket for communication with the server.");
+			this._socket = new Socket(serverIP, portNumber);
+			this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
+			this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
+
+			// Send the client's identity to the server
+			this._tee.println("Sending identitifier to server.");
+			String identity = this._config.getSetting("identity");
+			this.writeToSocket(identity);
+
+			// Check that the server recognised our identity
+			String serverResponse = this._socketReader.readLine();
+			if (!serverResponse.equals("Recognised")) {
+				throw new IOException("The server didn't recognise our identity: " + serverResponse);
+			}
+		}
+		catch (IOException e) {
+			throw new Exception("Failed to communicate with the server: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Thread-safe way to send message to the backup server.
+	 * @param message The message you want to send.
+	 */
+	private synchronized void writeToSocket(String message) {
+		this._socketWriter.println(message);
 	}
 
 	/**
@@ -106,48 +150,51 @@ public class BackupClient {
 	}
 
 	/**
-	 * Initialises the objects used for communication with the server and starts the communication.
-	 * @return True if the communication with the server was successfully initiated and false otherwise. This usually indicates a recoverable error.
-	 * @throws Exception If something unrecoverable happened, such as missing settings in the config file.
+	 * Communicates with the server.
 	 */
-	public boolean start() throws Exception {
-		String serverIP = this._config.getSetting("serverIP");
+	public void run() {
+		// We want to keep trying to communicate with the server until it's successful
+		while (true) {
+			try {
+				// Create a new instance of a BackupClient and initalise the conversation with the server
+				boolean startSuccessful = false;
+				while (!startSuccessful) {
+					// Try and initialise the communication with the server
+					try {
+						this.initialiseCommunication();
+						startSuccessful = true;
+					}
+					catch (Exception e) {
+						startSuccessful = false;
+					}
 
-		// Get the port number to connect to the server on
-		String portNumberAsString = this._config.getSetting("port");
-		int portNumber;
-		try {
-			portNumber = Integer.parseInt(portNumberAsString);
-		}
-		catch (NumberFormatException e) {
-			throw new Exception("The port number in the config file was not a number.");
-		}
+					if (!startSuccessful) {
+						this._tee.println("Waiting before we try to start communication again.");
+						this.sleep(this.getTimeoutLength());
+					}
+				}
 
-		// Create a socket and the objects for communication
-		try {
-			this._tee.println("Opening socket for communication with the server.");
-			this._socket = new Socket(serverIP, portNumber);
-			this._socketWriter = new PrintWriter(this._socket.getOutputStream(), true);
-			this._socketReader = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
+				// We need to send a pull request to the server when we start to make sure everything's in sync
+				this.sendPullRequest();
 
-			// Send the client's identity to the server
-			this._tee.println("Sending identitifier to server.");
-			String identity = this._config.getSetting("identity");
-			this._socketWriter.println(identity);
+				// Create the file watcher that sends a pull request every time the directory changes
+				this.sendPullRequestOnDirectoryChange();
 
-			// Check that the server recognised our identity
-			String serverResponse = this._socketReader.readLine();
-			if (!serverResponse.equals("Recognised")) {
-				throw new IOException("The server didn't recognise our identity: " + serverResponse);
+				// If we make it to this point then we can exit the loop
+				break;
+			}
+			catch (Exception e) {
+				// If an Exception occurs then communication with the server probably failed
+				// The best thing we can do is close all communication with the server, wait for a while, and try again
+				this._tee.println("Something went wrong with the backup client: " + e.getMessage());
+				this._tee.println("Waiting before trying again.");
+				this.cleanUp();
+				try {
+					Thread.sleep(this.getTimeoutLength());
+				}
+				catch (InterruptedException ex) {}
 			}
 		}
-		catch (IOException e) {
-			this._tee.println("Failed to communicate with the server: " + e.getMessage());
-			return false;
-		}
-
-		// Indicate success
-		return true;
 	}
 
 	/**
@@ -157,7 +204,7 @@ public class BackupClient {
 	 */
 	public boolean sendPullRequest() throws IOException {
 		this._tee.println("Sending pull request to server.");
-		this._socketWriter.println("PullRequest");
+		this.writeToSocket("PullRequest");
 		String response = this._socketReader.readLine();
 
 		// Check that the server hasn't finished communication
@@ -209,19 +256,20 @@ public class BackupClient {
 	}
 
 	/**
-	 * Sends the exit command to the server.
+	 * Sends the exit command to the server and causes the backup client thread to exit.
 	 */
 	public void exit() {
+		// Send the exit command to the server
 		this._tee.println("Exiting.");
-		this._socketWriter.println("exit");
-		return;
+		this.writeToSocket("exit");
+
+		this.cleanUp();
 	}
 
 	/**
 	 * Cleans up any buffers, sockets, etc. that need to be closed.
 	 */
 	public void cleanUp() {
-		this._tee.println("Cleaning up.");
 		try {
 			this._socket.close();
 			this._socketWriter.close();
