@@ -49,10 +49,7 @@ public class BackupClient {
 			System.out.println("Something went wrong: " + e.getMessage());
 		}
 		finally {
-			try {
-				backupClient.cleanUp();
-			}
-			catch (IOException e) {}
+			backupClient.cleanUp();
 		}
 	}
 
@@ -210,10 +207,15 @@ public class BackupClient {
 	/**
 	 * Cleans up any buffers, sockets, etc. that need to be closed.
 	 */
-	public void cleanUp() throws IOException {
+	public void cleanUp() {
 		System.out.println("Cleaning up.");
-		this._socket.close();
-		this._socketWriter.close();
-		this._socketReader.close();
+		try {
+			this._socket.close();
+			this._socketWriter.close();
+			this._socketReader.close();
+		}
+		catch (IOException e) {
+			// We just absorb any IOExceptions as we're trying to close the objects anyway
+		}
 	}
 }
