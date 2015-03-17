@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Read in the variables from the config files
-source ~/backup/config/defaultConfig
+source ../config/defaultConfig
 
 if [ $# -ne 2 ]
 then

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Read in the variables from the config files
-source ~/backup/config/defaultConfig
-source ~/backup/config/rsyncPullConfig
+source ../config/defaultConfig
+source ../config/rsyncPullConfig
 
 if [ $# -ne 1 ]
 then
