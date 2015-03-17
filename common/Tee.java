@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Calendar;
 
 /**
  * The Tee class allows printing to both stdout and a log file. It is named after the *nix command tee.
@@ -38,8 +39,14 @@ public class Tee {
 		// Print to log file
 		if (this._logFileWriter != null) {
 			try {
-				message = message + "\n";
-				this._logFileWriter.write(message);
+				// Get the current time
+				Calendar now = Calendar.getInstance();
+				int hour = now.get(Calendar.HOUR_OF_DAY);
+				int minute = now.get(Calendar.MINUTE);
+
+				// Construct and write the log message
+				String logMessage = "[" + hour + ":" + minute + "] " + message + "\n";
+				this._logFileWriter.write(logMessage);
 
 				// Flush straight away just in case the program closes unexpectedly
 				this._logFileWriter.flush();
@@ -48,7 +55,7 @@ public class Tee {
 		}
 
 		// Print to stdout
-		System.out.print(message);
+		System.out.println(message);
 	}
 
 	/**
