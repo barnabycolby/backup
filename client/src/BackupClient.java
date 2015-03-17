@@ -11,22 +11,36 @@ public class BackupClient {
 	public static void main(String[] args) {
 		BackupClient backupClient = null;
 		try {
-			// Create a new instance of a BackupClient and initalise the conversation with the server
-			backupClient = new BackupClient();
-			boolean startSuccessful = false;
-			while (!startSuccessful) {
-				startSuccessful = backupClient.start();
-				if (!startSuccessful) {
-					System.out.println("Waiting before we try to start communication again.");
-					Thread.sleep(2000);
+			// We want to keep trying to communicate with the server until it's successful
+			while (true) {
+				try {
+					// Create a new instance of a BackupClient and initalise the conversation with the server
+					backupClient = new BackupClient();
+					boolean startSuccessful = false;
+					while (!startSuccessful) {
+						startSuccessful = backupClient.start();
+						if (!startSuccessful) {
+							System.out.println("Waiting before we try to start communication again.");
+							Thread.sleep(5000);
+						}
+					}
+
+					// We need to send a pull request to the server when we start to make sure everything's in sync
+					backupClient.sendPullRequest();
+
+					// Create the file watcher that sends a pull request every time the directory changes
+					backupClient.sendPullRequestOnDirectoryChange();
+
+					// If we make it to this point then we can exit the loop
+					break;
+				}
+				catch (IOException e) {
+					// If an IOException occurs then communication with the server probably failed
+					// The best thing we can do is close all communication with the server, wait for a while, and try again
+					backupClient.cleanUp();
+					Thread.sleep(5000);
 				}
 			}
-
-			// We need to send a pull request to the server when we start to make sure everything's in sync
-			backupClient.sendPullRequest();
-
-			// Create the file watcher that sends a pull request every time the directory changes
-			backupClient.sendPullRequestOnDirectoryChange();
 
 			// Finally, we need to exit
 			backupClient.exit();
@@ -109,16 +123,26 @@ public class BackupClient {
 
 	/**
 	 * Send a pull request to the server asking it to sync the files.
+	 * @return Returns true if the pull request was successful and false otherwise.
+	 * @throws IOException Thrown if communication with the server fails for some reason.
 	 */
-	public void sendPullRequest() throws Exception {
+	public boolean sendPullRequest() throws IOException {
 		System.out.println("Sending pull request to server.");
 		this._socketWriter.println("PullRequest");
 		String response = this._socketReader.readLine();
 
+		// Check that the server hasn't finished communication
+		if (response == null) {
+			throw new IOException("The pull request was not successful: The server appears to have closed the connection.");
+		}
+
 		// Check that the pull request was successful
 		if (!response.equals("Succeeded")) {
-			throw new Exception("The pull request was not successful: " + response);
+			System.out.println("The pull request was not successful: " + response);
+			return false;
 		}
+
+		return true;
 	}
 
 	/**
