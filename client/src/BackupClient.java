@@ -21,7 +21,7 @@ public class BackupClient {
 						startSuccessful = backupClient.start();
 						if (!startSuccessful) {
 							System.out.println("Waiting before we try to start communication again.");
-							Thread.sleep(5000);
+							Thread.sleep(backupClient.getTimeoutLength());
 						}
 					}
 
@@ -38,7 +38,7 @@ public class BackupClient {
 					// If an IOException occurs then communication with the server probably failed
 					// The best thing we can do is close all communication with the server, wait for a while, and try again
 					backupClient.cleanUp();
-					Thread.sleep(5000);
+					Thread.sleep(backupClient.getTimeoutLength());
 				}
 			}
 
@@ -74,6 +74,25 @@ public class BackupClient {
 			throw new Exception("Could not open config file: " + e.getMessage());
 		}
 
+	}
+
+	/**
+	 * Gets the timeout length specified in the config settings, or uses a default value if the setting does not exist.
+	 */
+	public int getTimeoutLength() {
+		// Default timeout length (10 minutes)
+		int timeoutLength = 600000;
+
+		// Get the timeout length from the config file
+		try {
+			String timeoutLengthAsString = this._config.getSetting("timeoutLength");
+			timeoutLength = Integer.parseInt(timeoutLengthAsString);
+		}
+		catch (Exception e) {
+			// We absorb any exceptions and use the default timeout length instead
+		}
+
+		return timeoutLength;
 	}
 
 	/**

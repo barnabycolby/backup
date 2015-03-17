@@ -11,3 +11,6 @@ identity=barney
 
 # The directory to watch. Whenever it changes, the server will sync with the directory
 directoryToWatch=/home/barnaby/Documents/sambaShare
+
+# The timeout length
+timeoutLength=2000
