@@ -115,7 +115,8 @@ public class ClientHandler extends Thread {
 		}
 		catch (Exception e) {
 			System.err.println("Something went wrong with the client handler: " + e.getMessage());
-			System.exit(1);
+			this.cleanUp();
+			return;
 		}
 	}
 
