@@ -66,7 +66,7 @@ public class ConfigReader {
 	 * @return The value of the setting.
 	 * @throws Exception If the setting does not exist within the file.
 	 */
-	public String getSetting(String settingName) throws Exception {
+	public synchronized String getSetting(String settingName) throws Exception {
 		if (!this._configMap.containsKey(settingName)) {
 			throw new Exception("The config file did not contain the " + settingName + " setting.");
 		}

@@ -35,7 +35,7 @@ public class Tee {
 	 * Print to both the log and stdout.
 	 * @param message The message to print
 	 */
-	public void println(String message) {
+	public synchronized void println(String message) {
 		// Print to log file
 		if (this._logFileWriter != null) {
 			try {
