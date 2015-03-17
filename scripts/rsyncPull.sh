@@ -9,7 +9,7 @@ then
 	errorMessage="You must only provide one argument, the name of the share."
 	echo ${errorMessage}
 	echo ${errorMessage} | mail -s "${emailSubject}" ${emailAddress}
-	exit 1
+	exit 2
 fi
 
 # We take the first argument as the name of the share to backup
@@ -35,7 +35,7 @@ then
 		errorMessage="Share to pull from could not be mounted: ${mountOutput}"
 		echo ${errorMessage}
 		echo ${errorMessage} | mail -s "${emailSubject}" ${emailAddress}
-		exit 1
+		exit 3
 	fi
 fi
 
@@ -45,7 +45,7 @@ then
 	errorMessage="Destination ${destination} is not a directory."
 	echo ${errorMessage}
 	echo ${errorMessage} | mail -s "${emailSubject}" ${emailAddress}
-	exit 1
+	exit 4
 fi
 
 # Check that the destination directory actually exists
@@ -64,7 +64,7 @@ if [ $? -ne 0 ]
 then
 	echo "${rsyncOutput}"
 	echo "${rsyncOutput}" | mail -s "${emailSubject}" ${emailAddress}
-	exit 1
+	exit 5
 fi
 
 echo "Pull was successful"

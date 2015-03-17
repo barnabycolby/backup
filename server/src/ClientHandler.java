@@ -88,16 +88,36 @@ public class ClientHandler extends Thread {
 					case "PullRequest":
 						try {
 							System.out.println("Performing pull for client " + this._clientIdentity);
-							this.performPull();
-							int exitCode = this._shellCommandExecutor.getLastExitCode();
-							if (exitCode == 0) {
-								this._socketWriter.println("Succeeded");
+							int exitCode = this.performPull();
+
+							String pullOutcome = null;
+							switch (exitCode) {
+								case 0:
+									// This exact text indicates to the client that the pull was successful
+									pullOutcome = "Succeeded";
+									break;
+								case 1:
+									pullOutcome = "Unknown error occurred.";
+									break;
+								case 2:
+									pullOutcome = "The pull script was passed the wrong number of arguments.";
+									break;
+								case 3:
+									pullOutcome = "The share to pull from could not be mounted.";
+									break;
+								case 4:
+									pullOutcome = "Backup drive destination folder is not a folder.";
+									break;
+								case 5:
+									pullOutcome = "Rsync operation failed for an unknown reason.";
+									break;
+								default:
+									pullOutcome = "Unknown error occurred.";
+									break;
+
 							}
-							else {
-								String errorMessage = "Pull failed with exit code: " + exitCode;
-								System.out.println(errorMessage);
-								this._socketWriter.println(errorMessage);
-							}
+							System.out.println(pullOutcome);
+							this._socketWriter.println(pullOutcome);
 						}
 						catch (Exception e) {
 							System.out.println("The pull failed: " + e.getMessage());
@@ -123,15 +143,17 @@ public class ClientHandler extends Thread {
 	/**
 	 * Performs a pull operation, pulling the client's files across a share and into the continuous backup directory.
 	 * @throws Exception Throws an exception if the pull failed for any reason. The exception will contain a message detailing why the pull failed.
+	 * @return Returns the exit code of the pull command.
 	 */
-	private void performPull() throws Exception {
-		// Build up the command
+	private int performPull() throws Exception {
+		// Get the path of the rsync script
 		String rsyncPullScriptPath = this._config.getSetting("rsyncPullScriptPath");
-		String rsyncPullCommand = "sh " + rsyncPullScriptPath + " " + this._clientIdentity;
 
 		// Execute the command
-		String commandOutput = this._shellCommandExecutor.execute(rsyncPullCommand);
-		System.out.println("Pull output: " + commandOutput);
+		int exitCode = this._shellCommandExecutor.execute("sh", rsyncPullScriptPath, this._clientIdentity);
+
+		// Return the exit code
+		return exitCode;
 	}
 
 	/**
