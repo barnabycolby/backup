@@ -32,6 +32,16 @@ public class BackupServer extends Thread {
 			// Start the backup server
 			backupServer = new BackupServer(config, tee);
 
+			// Add hook to shutdown so that we can exit gracefully
+			final Tee finalTee = tee;
+			final BackupServer finalBackupServer = backupServer;
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				@Override
+				public void run() {
+					BackupServer.gracefullyExit(finalTee, finalBackupServer);
+				}
+			}));
+
 			// Listen for the user's input and exit if they ever press 'q'
 			Console console = System.console();
 			String userInput = "";
@@ -40,10 +50,7 @@ public class BackupServer extends Thread {
 				userInput = console.readLine();
 			}
 
-			// We need to stop the backup server
-			tee.println("Stopping backup server.");
-			backupServer.exit();
-			backupServer.join();
+			gracefullyExit(tee, backupServer);
 
 			// We have  some clean up of our own to do too
 			tee.cleanUp();
@@ -55,6 +62,21 @@ public class BackupServer extends Thread {
 			}
 			System.exit(1);
 		}
+	}
+
+	/**
+	 * Shuts down the server gracefully.
+	 * @param tee The tee used to print output.
+	 * @param backupServer The backup server to shutdown.
+	 */
+	public static void gracefullyExit(Tee tee, BackupServer backupServer) {
+		// We need to stop the backup server
+		tee.println("Stopping backup server.");
+		backupServer.exit();
+		try {
+			backupServer.join();
+		}
+		catch (InterruptedException ex) {}
 	}
 
 	/**
