@@ -193,6 +193,13 @@ public class ClientHandler extends Thread {
 	}
 
 	/**
+	 * Exits this client handler cleanly.
+	 */
+	public void exit() {
+		this.cleanUp();
+	}
+
+	/**
 	 * Closes socket and objects used for communicating with the socket.
 	 */
 	private void cleanUp() {

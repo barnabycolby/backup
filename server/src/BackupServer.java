@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * The backup server that allows communication with the backup clients. Currently it will handle multiple clients at the same time and send an echo of what the client sends.
@@ -77,13 +78,22 @@ public class BackupServer extends Thread {
 	private boolean _exitCalled = false;
 
 	/**
+	 * Stores a list of created client objects so that we can tell them to close on exit.
+	 */
+	private ArrayList<ClientHandler> _clients;
+
+	/**
 	 * Gets the port number from the config file and initialises a server socket.
 	 * @param config The config reader to retrieve settings from.
 	 * @param tee The tee to write output to.
 	 */
 	public BackupServer(ConfigReader config, Tee tee) throws Exception {
+		// Store objects passed via arguments
 		this._config = config;
 		this._tee = tee;
+
+		// Initalise the array list
+		this._clients = new ArrayList<ClientHandler>();
 
 		// Read the port number from the config file
 		String portNumberAsString = this._config.getSetting("port");
@@ -111,7 +121,7 @@ public class BackupServer extends Thread {
 		try {
 			while (true) {
 				this._tee.println("Waiting for connection.");
-				new ClientHandler(this._config, this._tee, this._serverSocket.accept());
+				this._clients.add(new ClientHandler(this._config, this._tee, this._serverSocket.accept()));
 				this._tee.println("New client connected.");
 			}
 		}
@@ -121,15 +131,33 @@ public class BackupServer extends Thread {
 				this._tee.println("An IOException occurred: " + e.getMessage());
 			}
 		}
-	}
-
-	/**
+	} /**
 	 * Causes the thread to exit in a clean way. It also calls the cleanUp method internally.
 	 */
 	public void exit() {
 		this._exitCalled = true;
 
 		// This interrupts the blocking call to accept in the run method
+		try {
+			this._serverSocket.close();
+		}
+		catch (IOException e) {
+			this._tee.println("Server socket failed to close: " + e.getMessage());
+		}
+
+		// Close each client handler
+		for (ClientHandler clientHandler : this._clients) {
+			if (clientHandler.isAlive()) {
+				this._tee.println("Closing connection to client.");
+				clientHandler.exit();
+			}
+			try {
+				clientHandler.join();
+			}
+			catch (InterruptedException e) {}
+		}
+
+		// Finally, we need to clean up
 		this.cleanUp();
 	}
 
