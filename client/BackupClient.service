@@ -6,3 +6,6 @@ After=network-online.target
 Type=simple
 User=backup
 ExecStart=/usr/bin/java -jar /home/barnaby/Documents/Home/BackupServer/backup/client/client.jar /home/barnaby/Documents/Home/BackupServer/backup/client/clientConfig
+
+[Install]
+WantedBy=multi-user.target
