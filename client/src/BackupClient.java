@@ -9,13 +9,20 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class BackupClient extends Thread {
 
 	public static void main(String[] args) {
+		// Check that we got given the correct number of arguments
+		if (args.length != 1) {
+			System.out.println("Usage: BackupClient pathOfConfigFile");
+			System.exit(1);
+		}
+
 		Tee tee = null;
 		try {
 			// Load the config file
 			ConfigReader config = null;
 			try {
 				System.out.println("Reading config file.");
-				config = new ConfigReader("./clientConfig");
+				String pathOfConfigFile = args[0];
+				config = new ConfigReader(pathOfConfigFile);
 			}
 			catch (IOException e) {
 				System.out.println("Could not open config file: " + e.getMessage());
@@ -82,6 +89,7 @@ public class BackupClient extends Thread {
 		this._config = config;
 		this._tee = tee;
 
+		Object blah = this.getClass().getProtectionDomain().getCodeSource().getLocation();
 
 		// Start the thread
 		this.start();
