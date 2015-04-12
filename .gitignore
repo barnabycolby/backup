@@ -7,3 +7,6 @@ log
 
 # Ignore any bin directories
 bin/
+
+# Ignore jar files
+*.jar
