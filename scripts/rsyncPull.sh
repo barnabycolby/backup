@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# Get the directory containing this script
+scriptDir="${BASH_SOURCE%/*}"
+
 # Read in the variables from the config files
-source ../config/defaultConfig
-source ../config/rsyncPullConfig
+source ${scriptDir}/../config/defaultConfig
+source ${scriptDir}/../config/rsyncPullConfig
 
 if [ $# -ne 1 ]
 then

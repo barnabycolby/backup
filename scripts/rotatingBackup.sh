@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory containing this script
+scriptDir="${BASH_SOURCE%/*}"
+
 # Store the script start time so we can write it to the log later
 scriptStartTime="$(date '+%A %d %B %Y %X')"
 
@@ -11,7 +14,7 @@ then
 fi
 
 # Read in the variables from the default config file for all backups
-source ../config/defaultConfig
+source ${scriptDir}/../config/defaultConfig
 
 # Read in the variables from the config file that was passed in as an argument
 source $1

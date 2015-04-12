@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Get the directory containing this script
+scriptDir="${BASH_SOURCE%/*}"
+
 # Read in the variables from the config files
-source ../config/defaultConfig
+source ${scriptDir}/../config/defaultConfig
 
 if [ $# -ne 2 ]
 then
