@@ -50,13 +50,15 @@ public class BackupServer extends Thread {
 				userInput = console.readLine();
 			}
 
-			gracefullyExit(tee, backupServer);
+				gracefullyExit(tee, backupServer);
+			}
 
 			// We have  some clean up of our own to do too
 			tee.cleanUp();
 		}
 		catch (Exception e) {
 			tee.println("Something went wrong: " + e.getMessage());
+			e.printStackTrace();
 			if (backupServer != null) {
 				backupServer.cleanUp();
 			}
