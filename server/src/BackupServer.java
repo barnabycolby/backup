@@ -7,8 +7,14 @@ import java.util.ArrayList;
  */
 public class BackupServer extends Thread {
 	public static void main(String[] args) {
+		// Check that we've been given the config file path as an argument
+		if (args.length != 1) {
+			System.out.println("Usage: BackupServer pathOfConfigFile");
+			System.exit(1);
+		}
+
 		// Load the config file that contains the settings for the server
-		String configFilePath = "./serverConfig";
+		String configFilePath = args[0];
 		ConfigReader config = null;
 		try {
 			config = new ConfigReader(configFilePath);
@@ -44,11 +50,19 @@ public class BackupServer extends Thread {
 
 			// Listen for the user's input and exit if they ever press 'q'
 			Console console = System.console();
-			String userInput = "";
-			while (!userInput.equals("q")) {
-				tee.println("Press 'q' and then enter if you want to exit.");
-				userInput = console.readLine();
+			if (console == null) {
+				System.out.println("No console available to listen for exit command.");
+				System.out.println("Waiting until we receive a shutdown signal.");
+				while (true) {
+					Thread.sleep(1000);
+				}
 			}
+			else {
+				String userInput = "";
+				while (!userInput.equals("q")) {
+					tee.println("Press 'q' and then enter if you want to exit.");
+					userInput = console.readLine();
+				}
 
 				gracefullyExit(tee, backupServer);
 			}

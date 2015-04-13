@@ -7,5 +7,8 @@ port=10008
 knownClientIdentities=dom,barney,ruth
 
 # The path of the rsync pull script
-rsyncPullScriptPath=../scripts/rsyncPull.sh
-sendMailScriptPath=../scripts/sendMail.sh
+rsyncPullScriptPath=/home/backup/backup/scripts/rsyncPull.sh
+sendMailScriptPath=/home/backup/backup/scripts/sendMail.sh
+
+# The path of the log file
+logFilePath=/home/backup/backup/server/log

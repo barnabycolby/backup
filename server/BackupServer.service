@@ -1,0 +1,11 @@
+[Unit]
+Description=Service for running the backup server.
+After=network-online.target
+
+[Service]
+Type=simple
+User=backup
+ExecStart=/usr/bin/java -jar /home/backup/backup/server/server.jar /home/backup/backup/server/serverConfig
+
+[Install]
+WantedBy=multi-user.target
