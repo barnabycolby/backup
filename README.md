@@ -1,3 +1,27 @@
+# Server Prerequisites
+- JDK
+- JRE
+- Make
+- Ability to send emails via mail command (SMTP Forwarder)
+- Cron
+- Samba client (smbclient)
+- Rsync
+
+# Client Prerequisites
+- JDK
+- JRE
+- Make
+- Samba
+
+# Server Installation instructions
+- Clone this git repository
+- Create bin directories in the client and server folders
+- Create a logs directory in the root of the repository
+- Set configuration settings in all files within config directory
+- Add crontab entries to run the daily and monthly backup scripts at the right times
+- Make a mount point under the configured backup shares folder for each client samba share
+- Add an fstab entry for mounting each clients samba share, specifying the user option with a value of backup to allow the backup user to mount the shares without root privileges
+
 #Instructions for adding a new client to the backup server
 - Add a new user to the backup machine with the username "backup"
 - Create a samba share of the folder you want backed up
