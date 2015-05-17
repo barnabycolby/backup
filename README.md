@@ -19,6 +19,7 @@
 - Create a logs directory in the root of the repository
 - Set configuration settings in all files within config directory
 - Add crontab entries to run the daily and monthly backup scripts at the right times
+- Make sure cronie systemd service is enabled
 - Make a mount point under the configured backup shares folder for each client samba share
 - Add an fstab entry for mounting each clients samba share, specifying the user option with a value of backup to allow the backup user to mount the shares without root privileges
 
