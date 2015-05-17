@@ -14,14 +14,20 @@
 - Samba
 
 # Server Installation instructions
+- Install server prerequisites
 - Clone this git repository
 - Create bin directories in the client and server folders
 - Create a logs directory in the root of the repository
 - Set configuration settings in all files within config directory
 - Add crontab entries to run the daily and monthly backup scripts at the right times
 - Make sure cronie systemd service is enabled
+- Enable wins host name lookup for samba
 - Make a mount point under the configured backup shares folder for each client samba share
 - Add an fstab entry for mounting each clients samba share, specifying the user option with a value of backup to allow the backup user to mount the shares without root privileges
+- Build the server jar by running make jar in the server directory
+- Install the server systemd service to /usr/lib/systemd/system and enable it
+- Add an fstab entry to auto mount backup device/s
+- Reboot
 
 #Instructions for adding a new client to the backup server
 - Add a new user to the backup machine with the username "backup"
